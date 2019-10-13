@@ -1,0 +1,832 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ConsoleApp1
+{
+
+
+    class Program
+    {
+
+        public class D
+        {
+            public double[] darr;
+            public string[] sarr;
+            public void Add(int c, string[] str, int[] types)
+            {
+                darr = new double[c];
+                sarr = new string[c];
+                for (int k = 0; k < c; k++)
+                {
+                    if (types[k] == 1)
+                        sarr[k] = str[k];
+                    if (types[k] == 2)
+                        darr[k] = double.Parse(str[k]);
+                }
+
+            }
+
+
+
+
+        }
+
+
+
+        public class Mydb
+        {
+            public string[] table;
+            public int[] types;
+            public int c;
+
+            public List<D> data = new List<D>();
+
+            public Mydb()
+            { }
+
+            public Mydb(string row, string typeofrow)// 1 = string, 2 = double. Первая строка — то, какие столбцы будут в таблице, вторая строка — то, какие типы будут у соответствующих столбцов.
+            {
+                table = row.Split('|', '/', '\\');
+                c = table.Length;
+                types = new int[c];
+                string[] temptypes = typeofrow.Split('|', '/', '\\');
+
+
+
+                for (int i = 0; i < c; i++)
+                    types[i] = int.Parse(temptypes[i]);
+
+                data = new List<D>();
+            }
+
+            public void Add(string row)
+            {
+                string[] parts = row.Split('|', '/', '\\');
+                D temp = new D();
+                temp.Add(c, parts, types);
+                data.Add(temp);
+
+            }
+
+            public void Insert(string row, int place)
+            {
+                string[] parts = row.Split('|', '/', '\\');
+                D temp = new D();
+                temp.Add(c, parts, types);
+                data.Insert(place, temp);
+
+            }
+
+            public void Search(string name, string item)
+            {
+                int i = 0;
+                while (i < c && name != table[i])
+                {
+                    i++;
+                }
+
+                if (i == c - 1 && name != table[i])
+                    Console.Write("???");
+                else
+                {
+                    for (int j = 0; j < data.Count; j++)
+                    {
+                        if (types[i] == 1)
+                            if (data[j].sarr[i] == item)
+                                for (int m = 0; m < c; m++)
+                                {
+                                    if (types[i] == 1)
+                                    {
+                                        Console.Write(data[j].sarr[m]);
+                                        Console.Write("|=|");
+                                    }
+                                    if (types[i] == 2)
+                                    {
+                                        Console.Write(data[j].darr[m]);
+                                        Console.Write("|=|");
+                                    }
+
+
+                                    if (i == c - 1)
+                                        Console.Write("\n");
+
+                                }
+
+                            else if (types[i] == 2)
+                                if (data[j].darr[i] == double.Parse(item))
+                                {
+                                    for (int m = 0; m < c; m++)
+                                    {
+                                        if (types[i] == 1)
+                                        {
+                                            Console.Write(data[j].sarr[m]);
+                                            Console.Write("|=|");
+                                        }
+                                        if (types[i] == 2)
+                                        {
+                                            Console.Write(data[j].darr[m]);
+                                            Console.Write("|=|");
+                                        }
+                                        if (i == c - 1)
+                                            Console.Write("\n");
+                                    }
+                                }
+                                else
+                                {
+                                    Console.Write("Такого не имеется.");
+                                }
+
+
+                    }
+
+                }
+            }
+
+
+            public void Remove(string row)
+            {
+                string[] parts = row.Split('|', '/', '\\');
+                bool okay = true;
+                for (int i = 0; i < data.Count; i++)
+                    for (int j = 0; j < c; j++)
+                    {
+                        if (types[j] == 1 && data[i].sarr[j] != parts[j] || types[j] == 2 && data[i].darr[j] != double.Parse(parts[j]))
+                        {
+                            okay = false;
+                        }
+
+                        if (okay == true)
+                        {
+                            data.RemoveAt(i);
+                            i--;
+                        }
+                        okay = true;
+
+                    }
+
+            }
+
+            public void Change(string row, string newrow)
+            {
+                string[] parts = row.Split('|', '/', '\\');
+                string[] newparts = newrow.Split('|', '/', '\\');
+                bool okay = true;
+                for (int i = 0; i < data.Count; i++)
+                    for (int j = 0; j < c; j++)
+                    {
+                        if (types[j] == 1 && data[i].sarr[j] != parts[j] || types[j] == 2 && data[i].darr[j] != double.Parse(parts[j]))
+                        {
+                            okay = false;
+                        }
+
+                        if (okay == true)
+                        {
+                            for (int n = 0; n < c; n++)
+                            {
+                                if (types[n] == 1)
+                                    data[i].sarr[n] = newparts[n];
+                                if (types[n] == 2)
+                                    data[i].darr[n] = int.Parse(newparts[n]);
+
+                            }
+                        }
+                        okay = true;
+
+                    }
+
+            }
+
+
+
+            public void Select(string row)
+            {
+                string[] parts = row.Split('|', '/', '\\');
+                bool[] needit = new bool[c];
+                for (int i = 0; i < c; i++)
+                {
+                    needit[i] = false;
+                }
+                int maxneedit = 0;
+                for (int i = 0; i < c; i++)
+                {
+                    for (int j = 0; j < parts.Length; j++)
+                        if (parts[j] == table[i])
+                        {
+                            needit[i] = true;
+                            maxneedit = i;
+
+                        }
+
+                }
+
+                for (int i = 0; i < data.Count; i++)
+                    for (int j = 0; j < c; j++)
+                        if (needit[j] == true)
+                        {
+                            if (types[j] == 1)
+                            {
+                                Console.Write(data[i].sarr[j]);
+                                if (j != maxneedit)
+                                    Console.Write("|=|");
+                            }
+                            if (types[j] == 2)
+                            {
+                                Console.Write(data[i].darr[j]);
+                                if (j != maxneedit)
+                                    Console.Write("|=|");
+                            }
+                            if (j == maxneedit)
+                                Console.Write("\n");
+
+                        }
+
+
+
+            }
+
+
+
+            public void Select_From(string row, string from, string items)// какие столбцы выбирать; названия столбцов, по которым поиск; что написано в нужных строках
+            {
+                string[] parts = row.Split('|', '/', '\\');
+                string[] find = from.Split('|', '/', '\\');
+                string[] item = items.Split('|', '/', '\\');
+                bool[] needit = new bool[c];
+                for (int i = 0; i < c; i++)
+                {
+                    needit[i] = false;
+                }
+                int maxneedit = 0;
+                for (int i = 0; i < c; i++)
+                {
+                    for (int j = 0; j < parts.Length; j++)
+                        if (parts[j] == table[i])
+                        {
+                            needit[i] = true;
+                            maxneedit = i;
+
+                        }
+                }
+
+                bool[] findit = new bool[c];
+
+                for (int i = 0; i < c; i++)
+                {
+                    findit[i] = false;
+                }
+
+                int maxfindit = 0;
+                string[] sorteditems = new string[c];
+                for (int i = 0; i < c; i++)
+                {
+                    for (int j = 0; j < find.Length; j++)
+                        if (find[j] == table[i])
+                        {
+                            findit[i] = true;
+                            maxfindit = i;
+                            sorteditems[i] = item[j];
+                        }
+
+                }
+
+                bool okay = true;
+
+                for (int i = 0; i < data.Count; i++)
+                {
+                    for (int m = 0; m < maxfindit; m++)
+                    {
+                        if (findit[m] == true && types[m] == 1 && data[i].sarr[m] != sorteditems[m] || findit[m] == true && types[m] == 2 && data[i].darr[m] != int.Parse(sorteditems[m]))
+                            okay = false;
+
+                    }
+
+                    if (okay == true)
+                    {
+                        for (int j = 0; j < maxneedit + 1; j++)
+                        {
+                            if (needit[j] == true)
+                            {
+                                if (types[j] == 1)
+                                {
+                                    Console.Write(data[i].sarr[j]);
+                                    if (j != maxneedit) Console.Write("|=|");
+                                }
+                                if (types[j] == 2)
+                                {
+                                    Console.Write(data[i].darr[j]);
+                                    if (j != maxneedit) Console.Write("|=|");
+                                }
+                                if (j == maxneedit)
+                                    Console.Write("\n");
+
+                            }
+                        }
+
+                    }
+                    okay = true;
+                }
+            }
+
+
+
+            public void Select_From_Order_By(string row, string from, string items, string orderby, bool inc)// какие столбцы выбирать; названия столбцов, по которым поиск; что написано в нужных строках; по какому сортировка; по возрастению? (да/нет)
+            {
+                string[] parts = row.Split('|', '/', '\\');
+                string[] find = from.Split('|', '/', '\\');
+                string[] item = items.Split('|', '/', '\\');
+                bool[] needit = new bool[c];
+                for (int i = 0; i < c; i++)
+                {
+                    needit[i] = false;
+                }
+                int maxneedit = 0;
+                for (int i = 0; i < c; i++)
+                {
+                    for (int j = 0; j < parts.Length; j++)
+                        if (parts[j] == table[i])
+                        {
+                            needit[i] = true;
+                            maxneedit = i;
+
+                        }
+
+                }
+
+                bool[] findit = new bool[c];
+
+
+                for (int i = 0; i < c; i++)
+                {
+                    findit[i] = false;
+                }
+                int maxfindit = 0;
+                string[] sorteditems = new string[c];
+                for (int i = 0; i < c; i++)
+                {
+                    for (int j = 0; j < find.Length; j++)
+                        if (find[j] == table[i])
+                        {
+                            findit[i] = true;
+                            maxfindit = i;
+                            sorteditems[i] = item[j];
+                        }
+                }
+
+                bool okay = true;
+
+                int order = 0;
+                for (int i = 0; i < c; i++)
+                    if (orderby == table[i])
+                        order = i;
+
+                var sorteddata = data;
+                if (types[order] == 2)
+                    sorteddata = data.OrderBy(d => d.darr[order]).ToList();
+
+                if (types[order] == 1)
+                    sorteddata = data.OrderBy(d => d.sarr[order]).ToList();
+
+
+                if (inc == true)
+                {
+                    for (int i = 0; i < data.Count; i++)
+                    {
+                        for (int m = 0; m < maxfindit + 1; m++)
+                        {
+                            if (findit[m] == true && types[m] == 1 && sorteddata[i].sarr[m] != sorteditems[m] || findit[m] == true && types[m] == 2 && sorteddata[i].darr[m] != int.Parse(sorteditems[m]))
+                                okay = false;
+
+                        }
+
+                        if (okay == true)
+                        {
+                            for (int j = 0; j < maxneedit + 1; j++)
+                            {
+                                if (needit[j] == true)
+                                {
+                                    if (types[j] == 1)
+                                    {
+                                        Console.Write(sorteddata[i].sarr[j]);
+                                        if (j != maxneedit) Console.Write("|=|");
+                                    }
+                                    if (types[j] == 2)
+                                    {
+                                        Console.Write(sorteddata[i].darr[j]);
+                                        if (j != maxneedit) Console.Write("|=|");
+                                    }
+                                    if (j == maxneedit)
+                                        Console.Write("\n");
+
+                                }
+                            }
+
+                        }
+                        okay = true;
+                    }
+                }
+
+
+                else if (inc == false)
+                {
+                    for (int i = data.Count - 1; i > -1; i--)
+                    {
+                        for (int m = 0; m < maxfindit + 1; m++)
+                        {
+                            if (findit[m] == true && types[m] == 1 && sorteddata[i].sarr[m] != sorteditems[m] || findit[m] == true && types[m] == 2 && sorteddata[i].darr[m] != int.Parse(sorteditems[m]))
+                                okay = false;
+
+                        }
+
+                        if (okay == true)
+                        {
+                            for (int j = 0; j < maxneedit + 1; j++)
+                            {
+                                if (needit[j] == true)
+                                {
+                                    if (types[j] == 1)
+                                    {
+                                        Console.Write(sorteddata[i].sarr[j]);
+                                        if (j != maxneedit) Console.Write("|=|");
+                                    }
+                                    if (types[j] == 2)
+                                    {
+                                        Console.Write(sorteddata[i].darr[j]);
+                                        if (j != maxneedit) Console.Write("|=|");
+                                    }
+                                    if (i == maxneedit)
+                                        Console.Write("\n");
+
+                                }
+                            }
+
+                        }
+                        okay = true;
+                    }
+                }
+
+            }
+
+
+
+
+            public void Select_From_Group_By(string row, string groupby, string item, string todo)// какие столбцы выбирать; по какому группировать; по какому вести расчёты; что делать: 1 = найти минимум, 2 = найти максимум, 3 = найти среднее, 4 = найти сумму
+            {
+                string[] parts = row.Split('|', '/', '\\');
+
+                bool[] needit = new bool[c];
+                for (int i = 0; i < c; i++)
+                {
+                    needit[i] = false;
+                }
+
+
+                int maxneedit = 0;
+                for (int i = 0; i < c; i++)
+                {
+                    for (int j = 0; j < parts.Length; j++)
+                        if (parts[j] == table[i] || item == table[i])
+                        {
+                            needit[i] = true;
+                            maxneedit = i;
+
+                        }
+                }
+
+                int findit = 0;
+
+                for (int i = 0; i < c; i++)
+                {
+                    if (item == table[i])
+                        findit = i;
+                }
+
+
+                int order = 0;
+                for (int i = 0; i < c; i++)
+                    if (groupby == table[i])
+                        order = i;
+
+                var sorteddata = data;
+                if (types[order] == 2)
+                    sorteddata = data.OrderBy(d => d.darr[order]).ToList();
+
+                if (types[order] == 1)
+                    sorteddata = data.OrderBy(d => d.sarr[order]).ToList();
+
+
+                bool okay = false;
+                bool beenhere = false;
+                int prev = 0;
+                int temp = 0;
+                bool last = false;
+                double min = sorteddata[0].darr[findit];
+
+                if (todo == "1")
+                {
+
+                    for (int i = 0; i < data.Count - 1; i++)
+                    {
+
+
+                        if (sorteddata[i].darr[findit] < min)
+                            min = sorteddata[i].darr[findit];
+
+
+                        if (sorteddata[i].sarr[order] != sorteddata[i + 1].sarr[order] && beenhere == false || sorteddata[i].sarr[order] == sorteddata[i + 1].sarr[order] && i + 1 == data.Count - 1 && sorteddata[i + 1].darr[findit] < sorteddata[i].darr[findit])
+                        {
+                            beenhere = true;
+                            temp = i;
+                            i = prev;
+                            if (sorteddata[i].sarr[order] == sorteddata[i + 1].sarr[order] && i + 1 == data.Count - 1 && sorteddata[i + 1].darr[findit] < sorteddata[i].darr[findit])
+                                last = true;
+                        }
+
+
+
+
+                        if (beenhere == true && min == sorteddata[i].darr[findit])
+                        {
+
+                            okay = true;
+                            prev = temp + 1;
+                            min = sorteddata[prev].darr[findit];
+                        }
+
+                        if (last == true)
+                            i = data.Count - 1;
+
+                        for (int j = 0; j < maxneedit + 1; j++)
+                        {
+                            if (needit[j] == true && okay == true)
+                            {
+                                if (types[j] == 1)
+                                {
+                                    Console.Write(sorteddata[i].sarr[j]);
+                                    if (j != maxneedit) Console.Write("|=|");
+                                }
+                                if (types[j] == 2)
+                                {
+                                    Console.Write(sorteddata[i].darr[j]);
+                                    if (j != maxneedit) Console.Write("|=|");
+                                }
+                                if (j == maxneedit)
+                                    Console.Write("\n");
+
+                            }
+
+                        }
+
+
+                        if (okay == true)
+                        {
+                            i = prev;
+                            okay = false;
+                            beenhere = false;
+                        }
+
+                    }
+
+                    if (last == false)
+                        for (int j = 0; j < maxneedit + 1; j++)
+                        {
+                            if (needit[j] == true)
+                            {
+                                if (types[j] == 1)
+                                {
+                                    Console.Write(sorteddata[data.Count - 1].sarr[j]);
+                                    if (j != maxneedit) Console.Write("|=|");
+                                }
+                                if (types[j] == 2)
+                                {
+                                    Console.Write(sorteddata[data.Count - 1].darr[j]);
+                                    if (j != maxneedit) Console.Write("|=|");
+                                }
+                                if (j == maxneedit)
+                                    Console.Write("\n");
+
+                            }
+
+                        }
+                }
+
+
+
+
+                if (todo == "2")
+                {
+
+                    for (int i = 0; i < data.Count - 1; i++)
+                    {
+
+
+                        if (sorteddata[i].darr[findit] < min)
+                            min = sorteddata[i].darr[findit];
+
+
+                        if (sorteddata[i].sarr[order] != sorteddata[i + 1].sarr[order] && beenhere == false || sorteddata[i].sarr[order] == sorteddata[i + 1].sarr[order] && i + 1 == data.Count - 1 && sorteddata[i + 1].darr[findit] < sorteddata[i].darr[findit])
+                        {
+                            beenhere = true;
+                            temp = i;
+                            i = prev;
+                            if (sorteddata[i].sarr[order] == sorteddata[i + 1].sarr[order] && i + 1 == data.Count - 1 && sorteddata[i + 1].darr[findit] < sorteddata[i].darr[findit])
+                                last = true;
+                        }
+
+
+
+
+                        if (beenhere == true && min == sorteddata[i].darr[findit])
+                        {
+
+                            okay = true;
+                            prev = temp + 1;
+                            min = sorteddata[prev].darr[findit];
+                        }
+
+                        if (last == true)
+                            i = data.Count - 1;
+
+                        for (int j = 0; j < maxneedit + 1; j++)
+                        {
+                            if (needit[j] == true && okay == true)
+                            {
+                                if (types[j] == 1)
+                                {
+                                    Console.Write(sorteddata[i].sarr[j]);
+                                    if (j != maxneedit) Console.Write("|=|");
+                                }
+                                if (types[j] == 2)
+                                {
+                                    Console.Write(sorteddata[i].darr[j]);
+                                    if (j != maxneedit) Console.Write("|=|");
+                                }
+                                if (j == maxneedit)
+                                    Console.Write("\n");
+
+                            }
+
+                        }
+
+
+                        if (okay == true)
+                        {
+                            i = prev;
+                            okay = false;
+                            beenhere = false;
+                        }
+
+                    }
+
+                    if (last == false)
+                        for (int j = 0; j < maxneedit + 1; j++)
+                        {
+                            if (needit[j] == true)
+                            {
+                                if (types[j] == 1)
+                                {
+                                    Console.Write(sorteddata[data.Count - 1].sarr[j]);
+                                    if (j != maxneedit) Console.Write("|=|");
+                                }
+                                if (types[j] == 2)
+                                {
+                                    Console.Write(sorteddata[data.Count - 1].darr[j]);
+                                    if (j != maxneedit) Console.Write("|=|");
+                                }
+                                if (j == maxneedit)
+                                    Console.Write("\n");
+
+                            }
+
+                        }
+                }
+
+
+
+                double sum = 0;
+                int count = 0;
+
+                if (todo == "3")
+                {
+
+                    for (int i = 0; i < data.Count; i++)
+                    {
+
+                        if (i < data.Count - 1 && sorteddata[i].sarr[order] == sorteddata[i + 1].sarr[order])
+                        {
+                            okay = false;
+                            sum = sum + sorteddata[i].darr[findit];
+                            count++;
+                        }
+
+                        if (okay == true)
+                        {
+                            sum = sum + sorteddata[i].darr[findit];
+                            count++;
+                        }
+
+                        for (int j = 0; j < maxneedit + 1; j++)
+                        {
+
+                            if (needit[j] == true && okay == true)
+                            {
+                               
+                                if (j == findit)
+                                {
+                                    Console.Write(sum / count);
+                                    if (j != maxneedit) Console.Write("|=|");
+                                    sum = 0;
+                                    count = 0;
+
+                                }
+                                else if (types[j] == 1)
+                                {
+                                    Console.Write(sorteddata[i].sarr[j]);
+                                    if (j != maxneedit) Console.Write("|=|");
+                                }
+                                else if (types[j] == 2)
+                                {
+                                    Console.Write(sorteddata[i].darr[j]);
+                                    if (j != maxneedit) Console.Write("|=|");
+                                }
+                               
+                                if (j == maxneedit)
+                                    Console.Write("\n");
+
+                            }
+                            
+
+                        }
+                        okay = true;
+                    }
+                }
+
+
+                if (todo == "4")
+                {
+
+                    for (int i = 0; i < data.Count; i++)
+                    {
+                        sum = sum + sorteddata[i].darr[findit];
+                        if (i < data.Count - 1 && sorteddata[i].sarr[order] == sorteddata[i + 1].sarr[order])
+                       okay = false;
+
+                        for (int j = 0; j < maxneedit + 1; j++)
+                        {
+
+                            if (needit[j] == true && okay == true)
+                            {
+
+                                if (j == findit)
+                                {
+                                    Console.Write(sum);
+                                    if (j != maxneedit) Console.Write("|=|");
+                                    sum = 0;
+                                  
+
+                                }
+                                else if (types[j] == 1)
+                                {
+                                    Console.Write(sorteddata[i].sarr[j]);
+                                    if (j != maxneedit) Console.Write("|=|");
+                                }
+                                else if (types[j] == 2)
+                                {
+                                    Console.Write(sorteddata[i].darr[j]);
+                                    if (j != maxneedit) Console.Write("|=|");
+                                }
+
+                                if (j == maxneedit)
+                                    Console.Write("\n");
+
+                            }
+
+
+                        }
+                        okay = true;
+                    }
+                }
+
+
+
+
+            }
+
+        }
+
+
+
+
+
+    
+        
+
+
+        static void Main(string[] args)
+        {
+            
+        }
+    }
+}
